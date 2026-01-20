@@ -1,24 +1,23 @@
-name: golang-pipeline
+name: CI/CD
 
 on:
   push:
-    branches: ['main']
+    branches: ['main', 'master']
     tags:
       - 'v*'
   pull_request:
-    branches: ['main']
+    branches: ['main', 'master']
 
 jobs:
   test:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-go@v5
         with:
           go-version: '1.22'
-          cache: true
+          cache: false
 
       - name: gofmt
         run: |
@@ -26,6 +25,11 @@ jobs:
 
       - name: go vet
         run: go vet ./...
+
+      - name: prepare db
+        run: |
+          rm -f tracker.db
+          sqlite3 tracker.db "CREATE TABLE IF NOT EXISTS parcel (number INTEGER PRIMARY KEY AUTOINCREMENT, client INTEGER, status TEXT, address TEXT, created_at TEXT);"
 
       - name: go test
         run: go test ./... -v
@@ -56,7 +60,7 @@ jobs:
           tags: |
             type=ref,event=tag
 
-      - name: Build and push
+      - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
           context: .
