@@ -1,12 +1,22 @@
-FROM golang:1.24.6
-
+# build stage
+FROM golang:1.22 AS builder
 WORKDIR /app
 
+ENV GOPROXY=https://proxy.golang.org,direct
+
 COPY go.mod go.sum ./
-RUN go mod download
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /main .
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o app .
 
-CMD ["/main"]
+# runtime stage
+FROM alpine:3.20
+WORKDIR /app
+COPY --from=builder /app/app ./app
+CMD ["./app"]

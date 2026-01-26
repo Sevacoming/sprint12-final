@@ -1,22 +1,22 @@
-# Binaries
+# Binaries for programs and plugins
 *.exe
 *.exe~
 *.dll
 *.so
 *.dylib
 
-# Test binary
+# Test binary, built with `go test -c`
 *.test
 
-# Coverage
+# Output of the go coverage tool
 *.out
 
-# Go workspace
+# Go workspace file
 go.work
 go.work.sum
 
-# Local DB
-tracker.db
-
-# Env
+# env file
 .env
+
+# local sqlite db
+tracker.db
